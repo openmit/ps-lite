@@ -30,8 +30,10 @@ Postoffice::Postoffice() {
   const char * c_max_dim = getenv("DMLC_NUM_DIMENSION");
   if (c_max_dim) {
     std::istringstream buffer(c_max_dim);
-    uint64_t max_dim; buffer >> max_dim;
+    Key max_dim; buffer >> max_dim;
     max_key_ = max_dim;
+  } else {
+    max_key_ = std::numeric_limits<Key>::max();
   }
 }
 
@@ -143,8 +145,7 @@ void Postoffice::Barrier(int node_group) {
 
 const std::vector<Range>& Postoffice::GetServerKeyRanges() {
   // support user-defined max key dimension
-  const uint64_t kMaxKey = max_key_ > 0l ?
-    max_key_ : std::numeric_limits<uint64_t>::max();
+  const Key kMaxKey = max_key_;
   if (server_key_ranges_.empty()) {
     for (int i = 0; i < num_servers_; ++i) {
       server_key_ranges_.push_back(Range(
