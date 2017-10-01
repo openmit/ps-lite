@@ -27,13 +27,15 @@ Postoffice::Postoffice() {
   is_scheduler_ = role == "scheduler";
   verbose_ = GetEnv("PS_VERBOSE", 0);
   // support user-defined max key dimension 
-  const char * c_max_dim = getenv("DMLC_NUM_DIMENSION");
+  const char * c_max_dim = getenv("DMLC_MAX_DIMENSION");
   if (c_max_dim) {
     std::istringstream buffer(c_max_dim);
     Key max_dim; buffer >> max_dim;
     max_key_ = max_dim;
+    LOG(INFO) << "[WARN] env DMLC_MAX_DIMENSION exists. user-defined max key: " << max_key_;
   } else {
     max_key_ = std::numeric_limits<Key>::max();
+    LOG(INFO) << "[WARN] env DMLC_MAX_DIMENSION not exists. use default max key: " << max_key_;
   }
 }
 
