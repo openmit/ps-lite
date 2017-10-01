@@ -1,6 +1,9 @@
 /**
  *  Copyright (c) 2015 by Contributors
  */
+#include <sstream>
+#include <stdint.h>
+#include <string>
 #include <unistd.h>
 #include <thread>
 #include <chrono>
@@ -23,6 +26,13 @@ Postoffice::Postoffice() {
   is_server_ = role == "server";
   is_scheduler_ = role == "scheduler";
   verbose_ = GetEnv("PS_VERBOSE", 0);
+  // support user-defined max key dimension 
+  const char * c_max_dim = getenv("DMLC_NUM_DIMENSION");
+  if (c_max_dim) {
+    std::istringstream buffer(c_max_dim);
+    uint64_t max_dim; buffer >> max_dim;
+    max_key_ = max_dim;
+  }
 }
 
 void Postoffice::Start(const char* argv0, const bool do_barrier) {
@@ -132,6 +142,9 @@ void Postoffice::Barrier(int node_group) {
 }
 
 const std::vector<Range>& Postoffice::GetServerKeyRanges() {
+  // support user-defined max key dimension
+  const uint64_t kMaxKey = max_key_ > 0l ?
+    max_key_ : std::numeric_limits<uint64_t>::max();
   if (server_key_ranges_.empty()) {
     for (int i = 0; i < num_servers_; ++i) {
       server_key_ranges_.push_back(Range(

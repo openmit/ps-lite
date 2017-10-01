@@ -181,6 +181,7 @@ class Postoffice {
   std::shared_ptr<Environment> env_ref_;
   time_t start_time_;
   DISALLOW_COPY_AND_ASSIGN(Postoffice);
+  uint64_t max_key_;
 };
 
 /** \brief verbose log */
