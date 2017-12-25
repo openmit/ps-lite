@@ -25,10 +25,11 @@ void RunWorker() {
   }
 
   // push
+  std::vector<int> extras;
   int repeat = 50;
   std::vector<int> ts;
   for (int i = 0; i < repeat; ++i) {
-    ts.push_back(kv.Push(keys, vals));
+    ts.push_back(kv.Push(keys, extras, vals));
 
     // to avoid too frequency push, which leads huge memory usage
     if (i > 10) kv.Wait(ts[ts.size()-10]);
@@ -36,7 +37,6 @@ void RunWorker() {
   for (int t : ts) kv.Wait(t);
 
   // pull
-  std::vector<int> extras;
   std::vector<float> rets;
   kv.Wait(kv.Pull(keys, extras, &rets));
 

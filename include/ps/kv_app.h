@@ -35,12 +35,12 @@ struct KVPairs {
   // KVPairs() {}
   /** \brief the list of keys */
   SArray<Key> keys;
+  /** \brief the extra infos */
+  SArray<int> extras;
   /** \brief the according values */
   SArray<Val> vals;
   /** \brief the according value lengths (could be empty) */
   SArray<int> lens;
-  /** \brief the extra infos */
-  SArray<int> extras;
 };
 
 /**
@@ -89,8 +89,9 @@ class KVWorker : public SimpleApp {
    * \code
    *   KVWorker<float> w;
    *   std::vector<Key> keys = {1, 3};
+   *   std::vector<int> extrs = {};
    *   std::vector<float> vals = {1.1, 1.2, 3.1, 3.2};
-   *   w.Push(keys, vals);
+   *   w.Push(keys, extras, vals);
    * \endcode
    *
    * If \a lens is given, then the value can be various length. See
@@ -110,13 +111,13 @@ class KVWorker : public SimpleApp {
    * @return the timestamp of this request
    */
   int Push(const std::vector<Key>& keys,
+           const std::vector<int>& extras,
            const std::vector<Val>& vals,
            const std::vector<int>& lens = {},
-           const std::vector<int>& extras = {},
            int cmd = 0,
            const Callback& cb = nullptr) {
     return ZPush(
-        SArray<Key>(keys), SArray<Val>(vals), SArray<int>(lens), SArray<int>(extras), cmd, cb);
+        SArray<Key>(keys), SArray<int>(extras), SArray<Val>(vals), SArray<int>(lens), cmd, cb);
   }
 
   /**
@@ -177,18 +178,18 @@ class KVWorker : public SimpleApp {
    * finished.
    */
   int ZPush(const SArray<Key>& keys,
+            const SArray<int>& extras,
             const SArray<Val>& vals,
             const SArray<int>& lens = {},
-            const SArray<int>& extras = {},
             int cmd = 0,
             const Callback& cb = nullptr) {
     int ts = obj_->NewRequest(kServerGroup);
     AddCallback(ts, cb);
     KVPairs<Val> kvs;
     kvs.keys = keys;
+    kvs.extras = extras;
     kvs.vals = vals;
     kvs.lens = lens;
-    kvs.extras = extras;
     Send(ts, true, cmd, kvs);
     return ts;
   }
@@ -507,6 +508,7 @@ void KVWorker<Val>::Send(int timestamp, bool push, int cmd, const KVPairs<Val>& 
     const auto& kvs = s.second;
     if (kvs.keys.size()) {
       msg.AddData(kvs.keys);
+      msg.AddData(kvs.extras);
       msg.AddData(kvs.vals);
       if (kvs.lens.size()) {
         msg.AddData(kvs.lens);
@@ -529,9 +531,10 @@ void KVWorker<Val>::Process(const Message& msg) {
     CHECK_GE(msg.data.size(), (size_t)2);
     KVPairs<Val> kvs;
     kvs.keys = msg.data[0];
-    kvs.vals = msg.data[1];
-    if (msg.data.size() > (size_t)2) {
-      kvs.lens = msg.data[2];
+    kvs.extras = msg.data[1];
+    kvs.vals = msg.data[2];
+    if (msg.data.size() > (size_t)3) {
+      kvs.lens = msg.data[3];
     }
     mu_.lock();
     recv_kvs_[ts].push_back(kvs);
