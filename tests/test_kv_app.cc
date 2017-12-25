@@ -36,8 +36,9 @@ void RunWorker() {
   for (int t : ts) kv.Wait(t);
 
   // pull
+  std::vector<int> extras;
   std::vector<float> rets;
-  kv.Wait(kv.Pull(keys, &rets));
+  kv.Wait(kv.Pull(keys, extras, &rets));
 
   float res = 0;
   for (int i = 0; i < num; ++i) {
