@@ -528,7 +528,7 @@ void KVWorker<Val>::Process(const Message& msg) {
   // store the data for pulling
   int ts = msg.meta.timestamp;
   if (!msg.meta.push && msg.data.size()) {
-    CHECK_GE(msg.data.size(), (size_t)2);
+    CHECK_GE(msg.data.size(), (size_t)3);
     KVPairs<Val> kvs;
     kvs.keys = msg.data[0];
     kvs.extras = msg.data[1];
