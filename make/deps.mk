@@ -6,13 +6,24 @@ WGET = wget
 endif
 
 # protobuf
+#PROTOBUF = ${DEPS_PATH}/include/google/protobuf/message.h
+#${PROTOBUF}:
+#	$(eval FILE=protobuf-2.5.0.tar.gz)
+#	$(eval DIR=protobuf-2.5.0)
+#	rm -rf $(FILE) $(DIR)
+#	$(WGET) $(URL)/$(FILE) && tar --no-same-owner -zxf $(FILE)
+#	cd $(DIR) && export CFLAGS=-fPIC && export CXXFLAGS=-fPIC && ./configure -prefix=$(DEPS_PATH) && $(MAKE) && $(MAKE) install
+#	rm -rf $(FILE) $(DIR)
+
+proto_version=3.5.0
 PROTOBUF = ${DEPS_PATH}/include/google/protobuf/message.h
 ${PROTOBUF}:
-	$(eval FILE=protobuf-2.5.0.tar.gz)
-	$(eval DIR=protobuf-2.5.0)
+	$(eval FILE=v$(proto_version).tar.gz)
+	$(eval DIR=protobuf-$(proto_version))
+	$(eval PROTOBUF_URL=https://github.com/google/protobuf/archive/$(FILE))
 	rm -rf $(FILE) $(DIR)
-	$(WGET) $(URL)/$(FILE) && tar --no-same-owner -zxf $(FILE)
-	cd $(DIR) && export CFLAGS=-fPIC && export CXXFLAGS=-fPIC && ./configure -prefix=$(DEPS_PATH) && $(MAKE) && $(MAKE) install
+	$(WGET) $(PROTOBUF_URL) && tar --no-same-owner -zxf $(FILE)
+	cd $(DIR) && export CFLAGS=-fPIC && export CXXFLAGS=-fPIC && ./autogen.sh && ./configure -prefix=$(DEPS_PATH) && $(MAKE) && $(MAKE) install
 	rm -rf $(FILE) $(DIR)
 
 # zmq
